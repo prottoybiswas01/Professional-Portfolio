@@ -375,6 +375,34 @@
       text-transform: uppercase;
     }
 
+    .profile-links {
+      margin-top: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .profile-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(224, 122, 95, 0.14);
+      border: 1px solid rgba(224, 122, 95, 0.22);
+      color: var(--accent-2);
+      font-size: 0.72rem;
+      font-family: var(--font-mono);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .profile-link:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 20px rgba(224, 122, 95, 0.18);
+    }
+
     .info-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -715,6 +743,34 @@
       color: var(--muted);
     }
 
+    .social-links {
+      margin-top: 16px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .social-link {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(12, 143, 122, 0.2);
+      background: rgba(12, 143, 122, 0.08);
+      color: var(--accent);
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+
+    .social-link:hover {
+      transform: translateY(-1px);
+      border-color: rgba(12, 143, 122, 0.45);
+      box-shadow: 0 10px 20px rgba(12, 143, 122, 0.15);
+    }
+
     .contact-form {
       display: grid;
       gap: 14px;
@@ -1025,12 +1081,15 @@
             <img id="profile-img" src="https://i.ibb.co/WpnjGDQC/IMG-20250428-134532-removebg-preview.png" alt="Prottoy Kumar Biswas">
             <div class="avatar-fallback" aria-hidden="true">PB</div>
           </div>
-          <div class="profile-info">
-            <h3>Prottoy Kumar Biswas</h3>
-            <p>Frontend Developer and UI/UX Enthusiast</p>
-            <span class="profile-pill">Available for projects</span>
+            <div class="profile-info">
+              <h3>Prottoy Kumar Biswas</h3>
+              <p>Frontend Developer and UI/UX Enthusiast</p>
+              <span class="profile-pill">Available for projects</span>
+              <div class="profile-links">
+                <a class="profile-link" href="https://en.wikipedia.org/wiki/User:Prottoy_Kumar_Biswas" target="_blank" rel="noopener noreferrer">Wikipedia</a>
+              </div>
+            </div>
           </div>
-        </div>
         <div class="info-grid">
           <div class="info-card">
             <p class="info-label">Based in</p>
@@ -1284,14 +1343,22 @@
             I am always open to new opportunities and collaborations. If you need a frontend developer who cares
             about detail, speed, and elegant UI, let's connect.
           </p>
-          <ul>
-            <li>Email: prottoybiswas575358@gmail.com</li>
-            <li>Role: Frontend Developer and UI/UX Enthusiast</li>
-            <li>Based in: Bangladesh</li>
-            <li>Availability: Open to freelance and full-time roles</li>
-          </ul>
-          <a class="btn btn-primary" href="mailto:prottoybiswas575358@gmail.com">Email Me</a>
-        </div>
+            <ul>
+              <li>Email: prottoybiswas575358@gmail.com</li>
+              <li>Role: Frontend Developer and UI/UX Enthusiast</li>
+              <li>Based in: Bangladesh</li>
+              <li>Availability: Open to freelance and full-time roles</li>
+            </ul>
+            <div class="social-links" aria-label="Social media links">
+              <a class="social-link" href="https://facebook.com/prottoy57" target="_blank" rel="noopener noreferrer">Facebook</a>
+              <a class="social-link" href="https://youtube.com/@novlog4612" target="_blank" rel="noopener noreferrer">YouTube</a>
+              <a class="social-link" href="https://github.com/prottoybiswas01" target="_blank" rel="noopener noreferrer">GitHub</a>
+              <a class="social-link" href="https://t.me/yourusername" target="_blank" rel="noopener noreferrer">Telegram</a>
+              <a class="social-link" href="https://linkedin.com/in/Prottoy_Kumar_Biswas" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+              <a class="social-link" href="https://instagram.com/yourusername" target="_blank" rel="noopener noreferrer">Instagram</a>
+            </div>
+            <a class="btn btn-primary" href="mailto:prottoybiswas575358@gmail.com">Email Me</a>
+          </div>
         <div class="contact-card reveal">
           <form class="contact-form" id="contact-form" action="https://formsubmit.co/prottoybiswas575358@gmail.com" method="POST">
             <input type="hidden" name="_subject" value="New Portfolio Message">
