@@ -73,6 +73,16 @@
       z-index: -3;
     }
 
+    .bg-canvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      pointer-events: none;
+      opacity: 0.7;
+    }
+
     img {
       max-width: 100%;
       display: block;
@@ -961,6 +971,7 @@
   </style>
 </head>
 <body>
+  <canvas id="bg-canvas" class="bg-canvas" aria-hidden="true"></canvas>
   <div class="scroll-progress" id="scroll-progress"></div>
 
   <header class="site-header">
@@ -1250,7 +1261,7 @@
           <div class="timeline-dot" aria-hidden="true"></div>
           <h4>Diploma in Engineering</h4>
           <p>Mangrove Institute of Science and Technology</p>
-          <p>Computer Technology - 7th Semester (Ongoing) - Session 2021-2022</p>
+          <p>Computer Technology - 8th Semester (Ongoing) - Session 2021-2022</p>
         </div>
         <div class="timeline-item reveal">
           <div class="timeline-dot" aria-hidden="true"></div>
@@ -1337,6 +1348,7 @@
     </div>
   </footer>
 
+  <script src="https://unpkg.com/three@0.159.0/build/three.min.js"></script>
   <script src="https://unpkg.com/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
   <script>
     const navToggle = document.querySelector("[data-nav-toggle]");
@@ -1400,6 +1412,226 @@
     window.requestAnimationFrame(() => {
       document.body.classList.add("is-loaded");
     });
+
+    const bgCanvas = document.getElementById("bg-canvas");
+    if (bgCanvas && window.THREE) {
+      try {
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+        camera.position.set(0, 0.2, 6);
+
+        const renderer = new THREE.WebGLRenderer({
+          canvas: bgCanvas,
+          alpha: true,
+          antialias: true
+        });
+
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.6));
+        renderer.setClearColor(0x000000, 0);
+        renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+        const group = new THREE.Group();
+        scene.add(group);
+
+        const coreGeometry = new THREE.IcosahedronGeometry(1.4, 1);
+        const coreMaterial = new THREE.MeshStandardMaterial({
+          color: 0x0c8f7a,
+          metalness: 0.35,
+          roughness: 0.4,
+          emissive: 0x0b3b34,
+          emissiveIntensity: 0.4
+        });
+        const core = new THREE.Mesh(coreGeometry, coreMaterial);
+        group.add(core);
+
+        const shellGeometry = new THREE.IcosahedronGeometry(2.1, 0);
+        const shellMaterial = new THREE.MeshBasicMaterial({
+          color: 0xe07a5f,
+          wireframe: true,
+          transparent: true,
+          opacity: 0.35
+        });
+        const shell = new THREE.Mesh(shellGeometry, shellMaterial);
+        group.add(shell);
+
+        const ringGeometry = new THREE.TorusGeometry(2.2, 0.06, 16, 120);
+        const ringMaterial = new THREE.MeshStandardMaterial({
+          color: 0xf2cc8f,
+          metalness: 0.2,
+          roughness: 0.7,
+          emissive: 0x3d2b16,
+          emissiveIntensity: 0.4
+        });
+        const ring = new THREE.Mesh(ringGeometry, ringMaterial);
+        ring.rotation.x = Math.PI / 2.2;
+        group.add(ring);
+
+        const skillCards = Array.from(document.querySelectorAll(".skill-card"));
+        const skillSources = skillCards.map((card) => {
+          const img = card.querySelector("img");
+          return img ? img.src : "";
+        });
+        const fallbackCount = window.innerWidth < 700 ? 8 : 12;
+        const skills = skillSources.length ? skillSources : Array.from({ length: fallbackCount }, () => "");
+
+        const orbitGroup = new THREE.Group();
+        const orbColors = ["#0c8f7a", "#e07a5f", "#f2cc8f", "#5d6a73"];
+        const loader = new THREE.TextureLoader();
+        loader.setCrossOrigin("anonymous");
+
+        const makeDotTexture = (color) => {
+          const size = 64;
+          const canvas = document.createElement("canvas");
+          canvas.width = size;
+          canvas.height = size;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) {
+            return null;
+          }
+          ctx.clearRect(0, 0, size, size);
+          ctx.fillStyle = color;
+          ctx.beginPath();
+          ctx.arc(size / 2, size / 2, size / 2 - 2, 0, Math.PI * 2);
+          ctx.fill();
+          const texture = new THREE.CanvasTexture(canvas);
+          texture.colorSpace = THREE.SRGBColorSpace;
+          return texture;
+        };
+
+        const dotTextures = orbColors
+          .map((color) => makeDotTexture(color))
+          .filter(Boolean);
+        const spriteSize = window.innerWidth < 700 ? 0.28 : 0.36;
+
+        const orbitConfigs = [
+          { radius: 2.4, speed: 0.35, tilt: new THREE.Euler(0, 0, 0) },
+          { radius: 2.7, speed: -0.28, tilt: new THREE.Euler(Math.PI / 2.2, 0, 0) },
+          { radius: 3.0, speed: 0.24, tilt: new THREE.Euler(Math.PI / 4, Math.PI / 6, 0) },
+          { radius: 3.3, speed: -0.2, tilt: new THREE.Euler(-Math.PI / 4, Math.PI / 6, 0) }
+        ];
+
+        const orbiters = [];
+        skills.forEach((src, index) => {
+          const dotTexture = dotTextures[index % dotTextures.length] || null;
+          const material = new THREE.SpriteMaterial({
+            map: dotTexture || null,
+            transparent: true,
+            opacity: 0.95,
+            depthWrite: false
+          });
+          const sprite = new THREE.Sprite(material);
+          sprite.scale.set(spriteSize, spriteSize, 1);
+
+          if (src) {
+            loader.load(
+              src,
+              (texture) => {
+                texture.colorSpace = THREE.SRGBColorSpace;
+                material.map = texture;
+                material.needsUpdate = true;
+                const image = texture.image;
+                if (image && image.width && image.height) {
+                  const ratio = image.width / image.height;
+                  sprite.scale.set(spriteSize * ratio, spriteSize, 1);
+                }
+              },
+              undefined,
+              () => {}
+            );
+          }
+
+          const orbitConfig = orbitConfigs[index % orbitConfigs.length];
+          sprite.userData = {
+            radius: orbitConfig.radius + (index % 3) * 0.08,
+            speed: orbitConfig.speed * (0.8 + Math.random() * 0.4),
+            phase: (index / skills.length) * Math.PI * 2,
+            tilt: orbitConfig.tilt
+          };
+          orbitGroup.add(sprite);
+          orbiters.push(sprite);
+        });
+        group.add(orbitGroup);
+
+        const starCount = window.innerWidth < 700 ? 160 : 280;
+        const starGeometry = new THREE.BufferGeometry();
+        const starPositions = new Float32Array(starCount * 3);
+        for (let i = 0; i < starCount; i++) {
+          const i3 = i * 3;
+          starPositions[i3] = (Math.random() - 0.5) * 14;
+          starPositions[i3 + 1] = (Math.random() - 0.5) * 10;
+          starPositions[i3 + 2] = (Math.random() - 0.5) * 10;
+        }
+        starGeometry.setAttribute("position", new THREE.BufferAttribute(starPositions, 3));
+        const starMaterial = new THREE.PointsMaterial({
+          color: 0xffffff,
+          size: 0.02,
+          opacity: 0.5,
+          transparent: true
+        });
+        const stars = new THREE.Points(starGeometry, starMaterial);
+        scene.add(stars);
+
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.65);
+        const keyLight = new THREE.PointLight(0x0c8f7a, 1.4, 12);
+        keyLight.position.set(2.4, 2.1, 3.6);
+        const warmLight = new THREE.PointLight(0xe07a5f, 1.1, 12);
+        warmLight.position.set(-2.6, -1.6, 2.8);
+        const rimLight = new THREE.PointLight(0xf2cc8f, 0.9, 12);
+        rimLight.position.set(0.8, -2.2, -3.2);
+
+        scene.add(ambientLight, keyLight, warmLight, rimLight);
+
+        const pointer = { x: 0, y: 0 };
+        if (!reduceMotion) {
+          window.addEventListener("pointermove", (event) => {
+            pointer.x = (event.clientX / window.innerWidth - 0.5) * 2;
+            pointer.y = (event.clientY / window.innerHeight - 0.5) * 2;
+          });
+        }
+
+        const resizeRenderer = () => {
+          const width = window.innerWidth;
+          const height = window.innerHeight;
+          renderer.setSize(width, height, false);
+          camera.aspect = width / height;
+          camera.updateProjectionMatrix();
+        };
+
+        window.addEventListener("resize", resizeRenderer);
+        resizeRenderer();
+
+        const clock = new THREE.Clock();
+
+        const orbitVector = new THREE.Vector3();
+        const renderScene = () => {
+          const elapsed = clock.getElapsedTime();
+          group.rotation.y = elapsed * 0.18 + pointer.x * 0.2;
+          group.rotation.x = elapsed * 0.12 + pointer.y * 0.2;
+          ring.rotation.z = elapsed * 0.25;
+          shell.rotation.y = -elapsed * 0.15;
+          orbiters.forEach((orb) => {
+            const { radius, speed, phase, tilt } = orb.userData;
+            const angle = elapsed * speed + phase;
+            orbitVector.set(Math.cos(angle) * radius, 0, Math.sin(angle) * radius);
+            orbitVector.applyEuler(tilt);
+            orb.position.copy(orbitVector);
+          });
+          stars.rotation.y = elapsed * 0.02;
+          camera.position.x = pointer.x * 0.4;
+          camera.position.y = 0.2 + pointer.y * 0.3;
+          camera.lookAt(0, 0, 0);
+          renderer.render(scene, camera);
+
+          if (!reduceMotion) {
+            requestAnimationFrame(renderScene);
+          }
+        };
+
+        renderScene();
+      } catch (error) {
+        bgCanvas.style.display = "none";
+      }
+    }
 
     const profileImg = document.getElementById("profile-img");
     if (profileImg) {
